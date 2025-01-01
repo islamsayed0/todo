@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:todo/module/DoneTask/donetask.dart';
 import 'package:todo/module/archive/archive.dart';
@@ -23,9 +24,12 @@ List N_Bar = [
   'archive',
 ];
 var titleControl =  TextEditingController();
+var timecont =  TextEditingController();
+var daetcont =  TextEditingController();
 bool shetStat = false;
 IconData floticon = Icons.add;
 var kay = GlobalKey<ScaffoldState>();
+var Formkay = GlobalKey<FormState>();
 Database? database;
 class _layoutState extends State<layout> {
   @override
@@ -49,37 +53,113 @@ class _layoutState extends State<layout> {
       body: page[inde],
       floatingActionButton: FloatingActionButton(onPressed: (){
         if(shetStat){
-          Navigator.pop(context);
-          shetStat = false;
-          setState(() {
-            floticon=Icons.add;
-          });
+          if(Formkay.currentState!.validate()){
+            Navigator.pop(context);
+            shetStat = false;
+            setState(() {
+              floticon=Icons.add;
+            });
+          }
+
 
         }else {
           kay.currentState?.showBottomSheet(
                   (builder) =>
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    color: Colors.grey[100],
-                    padding: EdgeInsets.all(20),
-                    child: TextFormField(
-                      controller: titleControl,
-                      decoration: InputDecoration(
+              Container(
+                color: Colors.grey[100],
+                padding: EdgeInsets.all(20),
+                child: Form(
+                  key: Formkay,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        validator: (v){
+                          if(v==null||v.isEmpty){
+                            return "Title must be added";
+                          }
+                          return null;
+                        },
+                        controller: titleControl,
+                        decoration: InputDecoration(
 
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 1,color: Colors.deepPurple,
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 1,color: Colors.deepPurple,
+                            ),
+                            borderRadius: BorderRadius.circular(20.0),
                           ),
-                          borderRadius: BorderRadius.circular(20.0),
+                          label: Text('title'),
+                          prefixIcon: Icon(Icons.title)
                         ),
-                        label: Text('title'),
-                        prefixIcon: Icon(Icons.title)
                       ),
-                    ),
-                  )
-                ],
+                      SizedBox(height: 20,),
+                      TextFormField(
+
+                        controller: timecont,
+                        onTap: (){
+                          FocusScope.of(context).requestFocus(FocusNode());
+                          showTimePicker(context: context, initialTime: TimeOfDay.now()).then((onValue){
+                            timecont.text=onValue!.format(context).toString();
+                          });
+                        },
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            // Return a message instead of printing
+                            return "Time must be added";
+                          }
+                          return null; // Return null if validation is successful
+                        },
+                        decoration: InputDecoration(
+
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 1,color: Colors.deepPurple,
+                            ),
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                          label: Text('Task time'),
+                          prefixIcon: Icon(Icons.watch_later),
+                        ),
+                      ),
+                      SizedBox(height: 20,),
+                      TextFormField(
+                        controller: daetcont,
+                        onTap: (){
+                          FocusScope.of(context).requestFocus(FocusNode());
+
+                          showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime.now(),
+                                    lastDate:DateTime.now().add(Duration(days: 365*100)),
+                              ).then((onValue){
+                                print(DateFormat.yMMMMd().format(onValue!));
+                                daetcont.text=DateFormat.yMMMMd().format(onValue!);
+                              });
+                        },
+                        validator: (v) {
+                          if (v == null || v.isEmpty) {
+                            // Return a message instead of printing
+                            return "Date must be added";
+                          }
+                          return null; // Return null if validation is successful
+                        },
+                        decoration: InputDecoration(
+
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 1,color: Colors.deepPurple,
+                              ),
+                              borderRadius: BorderRadius.circular(20.0),
+                            ),
+                            label: Text('Task Date'),
+                            prefixIcon: Icon(Icons.date_range)
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               )
           );
           setState(() {
